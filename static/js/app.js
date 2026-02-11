@@ -23,16 +23,30 @@ async function apiRequest(endpoint, options = {}) {
         const res = await fetch(`${API}${endpoint}`, { ...options, headers });
         if (res.status === 401) {
             handleLogout();
-            throw new Error('Session expired');
+            throw new Error('Session expired. Please sign in again.');
         }
         if (res.status === 204) return null;
-        const data = await res.json();
+
+        // Safely parse response — handle non-JSON (e.g. plain-text 500)
+        let data;
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            data = await res.json();
+        } else {
+            const text = await res.text();
+            if (!res.ok) {
+                throw new Error(text || `Server error (${res.status})`);
+            }
+            // Try parsing as JSON anyway (some servers omit content-type)
+            try { data = JSON.parse(text); } catch { data = { message: text }; }
+        }
+
         if (!res.ok) {
-            throw new Error(data.detail || 'Request failed');
+            throw new Error(data.detail || data.message || `Request failed (${res.status})`);
         }
         return data;
     } catch (err) {
-        if (err.message !== 'Session expired') {
+        if (err.message !== 'Session expired. Please sign in again.') {
             console.error('API Error:', err);
         }
         throw err;
