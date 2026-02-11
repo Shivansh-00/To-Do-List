@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"
 
-app = FastAPI(title="AI Productivity OS", version="1.0.0")
+app = FastAPI(title="AI Productivity OS", version="1.0.0", redirect_slashes=False)
 
 
 @app.exception_handler(Exception)

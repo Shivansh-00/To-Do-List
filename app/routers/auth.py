@@ -17,6 +17,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/signup", response_model=Token, status_code=status.HTTP_201_CREATED)
+@router.post("/signup/", response_model=Token, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def signup(payload: UserCreate, db: Session = Depends(get_db)):
     try:
         # Check existing username
@@ -67,6 +68,7 @@ async def signup(payload: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
+@router.post("/login/", response_model=Token, include_in_schema=False)
 async def login(payload: UserLogin, db: Session = Depends(get_db)):
     try:
         user = db.query(User).filter(User.username == payload.username).first()
@@ -98,6 +100,7 @@ async def login(payload: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserResponse)
+@router.get("/me/", response_model=UserResponse, include_in_schema=False)
 async def get_me(
     db: Session = Depends(get_db),
     token: str = None,
