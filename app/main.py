@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import traceback
+from pathlib import Path
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +15,10 @@ from app.routers import ai, auth, insights, schedule, tasks
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Resolve project root (works in any deployment CWD)
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(title="AI Productivity OS", version="1.0.0")
 
@@ -36,25 +41,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include routers FIRST (before static mount)
 app.include_router(auth.router)
 app.include_router(tasks.router)
 app.include_router(ai.router)
 app.include_router(insights.router)
 app.include_router(schedule.router)
 
-# Serve static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 @app.on_event("startup")
 async def startup_event():
     init_db()
+    logger.info(f"Static dir: {STATIC_DIR} (exists={STATIC_DIR.exists()})")
+    logger.info(f"DB dir: {BASE_DIR}")
 
 
 @app.get("/")
 async def serve_frontend():
-    return FileResponse("static/index.html")
+    return FileResponse(str(STATIC_DIR / "index.html"))
 
 
 @app.get("/health")
@@ -70,3 +74,7 @@ async def realtime_updates(websocket: WebSocket) -> None:
             await websocket.receive_text()
     except WebSocketDisconnect:
         realtime_manager.disconnect(websocket)
+
+
+# Mount static LAST so it doesn't shadow API routes
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
