@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TO-DO-LIST</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <!-- ══════════════ Toast Container ══════════════ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ══════════════ Auth Page ══════════════ -->
+    <div class="auth-container" id="authPage">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-icon">🚀</div>
+                <h1>TO-DO-LIST</h1>
+                <p>The smart way to manage your tasks</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab" data-tab="signup" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <div id="authError" class="auth-error"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="form-input" id="loginUsername" placeholder="Enter your username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="auth-btn" id="loginBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" style="display:none" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-input" id="signupFullName" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="form-input" id="signupUsername" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-input" id="signupPassword" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="auth-btn" id="signupBtn">
+                    Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════ Main Application ══════════════ -->
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-sm">🚀</div>
+                <span class="brand">TO-DO-LIST</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Main</div>
+                <div class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-page="tasks" onclick="navigateTo('tasks')">
+                    <span class="nav-icon">✅</span>
+                    <span>All Tasks</span>
+                    <span class="badge" id="taskCountBadge">0</span>
+                </div>
+                
+                <div class="nav-section-title">AI Features</div>
+                <div class="nav-item" data-page="insights" onclick="navigateTo('insights')">
+                    <span class="nav-icon">🧠</span>
+                    <span>AI Insights</span>
+                </div>
+
+                <div class="nav-section-title">Account</div>
+                <div class="nav-item" data-page="settings" onclick="navigateTo('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info" onclick="navigateTo('settings')">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="name" id="userDisplayName">User</div>
+                        <div class="email" id="userDisplayEmail">user@email.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-bar">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search tasks..." id="searchInput" oninput="handleSearch(this.value)">
+                    </div>
+                    <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+                        🌙
+                    </button>
+                    <button class="icon-btn" onclick="navigateTo('settings')" title="Settings">⚙️</button>
+                </div>
+            </header>
+
+            <!-- ═══ Dashboard Page ═══ -->
+            <div class="content-area page active" id="page-dashboard">
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-label">Total Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="statDone">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔄</div>
+                        <div class="stat-value" id="statProgress">0</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-value" id="statTodo">0</div>
+                        <div class="stat-label">To Do</div>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2 class="section-title">Recent Tasks</h2>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        ➕ New Task
+                    </button>
+                </div>
+                <div class="task-list" id="recentTaskList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <h3>No tasks yet</h3>
+                        <p>Create your first task to get started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Tasks Page ═══ -->
+            <div class="content-area page" id="page-tasks">
+                <div class="section-header">
+                    <h2 class="section-title">All Tasks</h2>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        ➕ New Task
+                    </button>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-pill active" data-filter="all" onclick="filterTasks('all')">All</button>
+                    <button class="filter-pill" data-filter="todo" onclick="filterTasks('todo')">To Do</button>
+                    <button class="filter-pill" data-filter="in_progress" onclick="filterTasks('in_progress')">In Progress</button>
+                    <button class="filter-pill" data-filter="done" onclick="filterTasks('done')">Done</button>
+                    <button class="filter-pill" data-filter="blocked" onclick="filterTasks('blocked')">Blocked</button>
+                </div>
+
+                <div class="task-list" id="allTaskList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <h3>No tasks yet</h3>
+                        <p>Create your first task to get started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Insights Page ═══ -->
+            <div class="content-area page" id="page-insights">
+                <div class="section-header">
+                    <h2 class="section-title">AI-Powered Insights</h2>
+                    <button class="btn btn-secondary" onclick="loadInsights()">🔄 Refresh</button>
+                </div>
+
+                <div class="insights-grid" id="insightsGrid">
+                    <div class="insight-card">
+                        <h3>Productivity Score</h3>
+                        <div class="score-ring">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border-color)" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="52" fill="none" stroke="url(#scoreGrad)" stroke-width="8" 
+                                    stroke-dasharray="327" stroke-dashoffset="327" stroke-linecap="round" id="scoreCircle"/>
+                                <defs>
+                                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#667eea"/>
+                                        <stop offset="100%" style="stop-color:#764ba2"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="score-text">
+                                <span class="score-value" id="productivityScore">0%</span>
+                                <span class="score-label">Score</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insight-card">
+                        <h3>Peak Productivity Hours</h3>
+                        <div class="peak-hours" id="peakHours"></div>
+                    </div>
+
+                    <div class="insight-card">
+                        <h3>Procrastination Risk</h3>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                            <span id="procrastinationValue" style="font-size:24px;font-weight:800">0%</span>
+                        </div>
+                        <div class="risk-meter">
+                            <div class="risk-meter-fill" id="procrastinationBar" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="insight-card">
+                        <h3>Burnout Risk</h3>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                            <span id="burnoutValue" style="font-size:24px;font-weight:800">0%</span>
+                        </div>
+                        <div class="risk-meter">
+                            <div class="risk-meter-fill" id="burnoutBar" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="insight-card" style="grid-column: 1 / -1">
+                        <h3>Weekly Productivity Forecast</h3>
+                        <div id="weeklyForecast" style="display:flex;gap:12px;align-items:flex-end;height:120px"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Settings Page ═══ -->
+            <div class="content-area page" id="page-settings">
+                <div class="settings-section">
+                    <h3>🎨 Appearance</h3>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Dark Mode</div>
+                            <div class="setting-desc">Switch between light and dark theme</div>
+                        </div>
+                        <div class="toggle" id="darkModeToggle" onclick="toggleTheme()"></div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>👤 Account</h3>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" id="settingsUsername">Username</div>
+                            <div class="setting-desc" id="settingsEmail">Email</div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Member Since</div>
+                            <div class="setting-desc" id="settingsCreatedAt">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>🔐 Security</h3>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        🚪 Sign Out
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ══════════════ Create/Edit Task Modal ══════════════ -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">New Task</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm" onsubmit="handleTaskSubmit(event)">
+                    <input type="hidden" id="editTaskId">
+                    <div class="form-group">
+                        <label>Task Title *</label>
+                        <input type="text" class="form-input" id="taskTitle" placeholder="What needs to be done?" required maxlength="256">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="form-textarea" id="taskDescription" placeholder="Add more details..."></textarea>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="datetime-local" class="form-input" id="taskDueDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Priority</label>
+                            <select class="form-select" id="taskPriority">
+                                <option value="30">🟢 Low</option>
+                                <option value="50" selected>🟡 Medium</option>
+                                <option value="80">🔴 High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags (comma separated)</label>
+                        <input type="text" class="form-input" id="taskTags" placeholder="work, urgent, personal">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="document.getElementById('taskForm').requestSubmit()">
+                    💾 Save Task
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,3 +1,3 @@
-from app.routers import ai, insights, schedule, tasks
+from app.routers import ai, auth, insights, schedule, tasks
 
-__all__ = ["ai", "insights", "schedule", "tasks"]
+__all__ = ["ai", "auth", "insights", "schedule", "tasks"]

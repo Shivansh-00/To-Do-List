@@ -2,11 +2,45 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
+
+# ── Auth Schemas ──────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    username: str = Field(min_length=3, max_length=50)
+    email: str = Field(min_length=5, max_length=255)
+    full_name: str | None = None
+    password: str = Field(min_length=6, max_length=128)
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    full_name: str | None = None
+    is_active: bool = True
+    created_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
+# ── Task Schemas ──────────────────────────────────────────────
 
 class TaskStatus(str, Enum):
     TODO = "todo"
@@ -19,7 +53,7 @@ class TaskBase(BaseModel):
     title: str = Field(min_length=1, max_length=256)
     description: str | None = None
     due_at: datetime | None = None
-    parent_task_id: UUID | None = None
+    parent_task_id: str | None = None
     tags: list[str] = Field(default_factory=list)
 
 
@@ -33,25 +67,30 @@ class TaskUpdate(BaseModel):
     due_at: datetime | None = None
     status: TaskStatus | None = None
     tags: list[str] | None = None
+    priority_score: float | None = None
 
 
 class Task(TaskBase):
-    id: UUID = Field(default_factory=uuid4)
+    id: str = Field(default_factory=lambda: str(uuid4()))
     status: TaskStatus = TaskStatus.TODO
     priority_score: float = 50.0
     estimated_minutes: int = 30
     predicted_due_at: datetime | None = None
+    owner_id: str | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    class Config:
+        from_attributes = True
+
 
 class TaskBreakdownResponse(BaseModel):
-    task_id: UUID
+    task_id: str
     generated_subtasks: list[str]
 
 
 class TaskEstimationResponse(BaseModel):
-    task_id: UUID
+    task_id: str
     estimated_minutes: int
     confidence: float
 
@@ -64,7 +103,7 @@ class BehaviorInsights(BaseModel):
 
 
 class ScheduleBlock(BaseModel):
-    task_id: UUID
+    task_id: str
     starts_at: datetime
     ends_at: datetime
     confidence: float
@@ -72,7 +111,7 @@ class ScheduleBlock(BaseModel):
 
 
 class ScheduleRequest(BaseModel):
-    tasks: list[UUID]
+    tasks: list[str]
     start_at: datetime
 
 

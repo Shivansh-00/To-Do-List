@@ -5,3 +5,12 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - SECRET_KEY=ai-productivity-os-secret-2026
+      - DATABASE_URL=sqlite:///./productivity.db
+    volumes:
+      - ./app:/app/app
+      - ./static:/app/static
+      - db-data:/app
+
+volumes:
+  db-data:
